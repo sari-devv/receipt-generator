@@ -1,0 +1,12 @@
+# Private config — never commit this
+config.json
+
+# Generated PDFs and intermediate LaTeX files
+output/
+
+# macOS
+.DS_Store
+
+# Virtual environment
+venv/
+

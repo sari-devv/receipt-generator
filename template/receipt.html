@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: A4;
+      margin: 18mm 20mm 18mm 20mm;
+    }
+
+    body {
+      font-family: 'Frank Ruhl Libre', 'Arial Hebrew', 'David', Arial, sans-serif;
+      font-size: 11.5pt;
+      color: #000;
+      background: #fff;
+      direction: rtl;
+    }
+
+    /* ── Business header ─────────────────────────────────────────────────── */
+    .business-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1.5px solid #333;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+    .business-details { text-align: right; }
+    .business-name { font-size: 16pt; font-weight: 900; }
+    .business-sub  { font-size: 9.5pt; color: #333; margin-top: 2px; }
+    .exempt-label  { font-size: 9.5pt; color: #555; text-align: left; }
+
+    /* ── Receipt title row ───────────────────────────────────────────────── */
+    .receipt-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0 8px 0;
+    }
+    .receipt-number {
+      font-size: 18pt;
+      font-weight: 900;
+      text-align: center;
+      flex: 1;
+    }
+    .receipt-date {
+      font-size: 11pt;
+      white-space: nowrap;
+    }
+    .receipt-date .underline,
+    .field-line .underline {
+      border-bottom: 1px solid #000;
+      display: inline-block;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    /* ── Recipient fields ────────────────────────────────────────────────── */
+    .field-line {
+      display: flex;
+      align-items: baseline;
+      border-bottom: 1px solid #555;
+      padding: 5px 0 3px 0;
+      margin-bottom: 6px;
+      gap: 6px;
+    }
+    .field-label { font-weight: 700; white-space: nowrap; }
+    .field-value { flex: 1; }
+
+    /* ── Items table ─────────────────────────────────────────────────────── */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+    }
+    .items-table th,
+    .items-table td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      text-align: center;
+    }
+    .items-table .col-desc {
+      text-align: right;
+      padding-right: 10px;
+    }
+    .items-table thead th {
+      background: #e8e8e8;
+      font-weight: 700;
+    }
+    .items-table .amount-col { width: 80px; }
+    .items-table .ag-col    { width: 55px; }
+    .items-table tr.empty td { height: 22px; }
+    .items-table tr.total-row td {
+      font-weight: 700;
+      background: #f5f5f5;
+    }
+    .items-table .total-label {
+      text-align: left;
+      padding-left: 10px;
+    }
+
+    /* ── Payment section ─────────────────────────────────────────────────── */
+    .payment-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    /* Left: breakdown mini-table */
+    .payment-table {
+      border-collapse: collapse;
+      min-width: 140px;
+    }
+    .payment-table th,
+    .payment-table td {
+      border: 1px solid #000;
+      padding: 4px 8px;
+      text-align: center;
+      width: 65px;
+    }
+    .payment-table thead th { background: #e8e8e8; font-weight: 700; }
+    .payment-table tr.total-row td { font-weight: 700; background: #f5f5f5; }
+    .payment-table tr.empty td { height: 22px; }
+
+    /* Right: payment method lines */
+    .payment-methods {
+      flex: 1;
+      text-align: right;
+      font-size: 10.5pt;
+    }
+    .payment-row {
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 7px;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+    .payment-row .pay-label { white-space: nowrap; font-weight: 700; }
+    .payment-row .pay-field {
+      border-bottom: 1px solid #000;
+      min-width: 80px;
+      display: inline-block;
+      text-align: center;
+    }
+    .payment-row .pay-field.wide { min-width: 120px; }
+    .payment-row .pay-sep { color: #555; }
+
+    /* ── Signature ───────────────────────────────────────────────────────── */
+    .signature-area {
+      text-align: center;
+      margin-top: 18px;
+    }
+    .signature-line {
+      display: inline-block;
+      border-top: 1px solid #000;
+      width: 140px;
+      margin-bottom: 3px;
+    }
+    .signature-label { font-size: 10.5pt; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Business header ────────────────────────────────────────────────── -->
+  <div class="business-header">
+    <span class="exempt-label">עוסק פטור</span>
+    <div class="business-details">
+      <div class="business-name">{{ business_name }}</div>
+      <div class="business-sub">{{ business_address }}</div>
+      <div class="business-sub">טל׳: {{ business_phone }} &nbsp;|&nbsp; ע.מ.: {{ business_id }}</div>
+    </div>
+  </div>
+
+  <!-- ── Receipt title ──────────────────────────────────────────────────── -->
+  <div class="receipt-meta">
+    <div class="receipt-date">
+      תאריך: <span class="underline">&nbsp;{{ receipt_date }}&nbsp;</span>
+    </div>
+    <div class="receipt-number">קבלה מס׳ {{ receipt_number }}</div>
+    <div style="flex:0.3;"></div><!-- spacer to keep number visually centred -->
+  </div>
+
+  <!-- ── Recipient ──────────────────────────────────────────────────────── -->
+  <div class="field-line">
+    <span class="field-label">לכבוד:</span>
+    <span class="field-value">{{ recipient_name }}</span>
+  </div>
+  <div class="field-line">
+    <span class="field-label">כתובת:</span>
+    <span class="field-value">{{ recipient_address }}</span>
+  </div>
+
+  <!-- ── Items table ────────────────────────────────────────────────────── -->
+  <table class="items-table">
+    <thead>
+      <tr>
+        <!-- RTL: rightmost column first in markup = פרטים -->
+        <th rowspan="2">פרטים</th>
+        <th colspan="2">הסכום</th>
+      </tr>
+      <tr>
+        <th class="ag-col">אג׳</th>
+        <th class="amount-col">שקל חדש</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td class="col-desc">{{ item.description }}</td>
+        <td>{{ item.ag }}</td>
+        <td>{{ item.nis }}</td>
+      </tr>
+      {% endfor %}
+      {% for _ in range(empty_rows) %}
+      <tr class="empty"><td></td><td></td><td></td></tr>
+      {% endfor %}
+      <tr class="total-row">
+        <td class="total-label">סה"כ</td>
+        <td>{{ total_ag }}</td>
+        <td>{{ total_nis }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── Payment section ───────────────────────────────────────────────── -->
+  <div class="payment-section">
+
+    <!-- Right side: payment method lines (RTL = appears on right) -->
+    <div class="payment-methods">
+
+      <div class="payment-row">
+        <span class="pay-label">במזומנים</span>
+        <span class="pay-field wide">&nbsp;{{ cash_display }}&nbsp;</span>
+      </div>
+
+      {% for chk in checks %}
+      <div class="payment-row">
+        <span class="pay-label">בשיק מס׳</span>
+        <span class="pay-field">&nbsp;{{ chk.number }}&nbsp;</span>
+        <span class="pay-sep">חשבון</span>
+        <span class="pay-field">&nbsp;{{ chk.account }}&nbsp;</span>
+        <span class="pay-sep">בנק</span>
+        <span class="pay-field">&nbsp;{{ chk.bank }}&nbsp;</span>
+        <span class="pay-sep">ז"פ</span>
+        <span class="pay-field">&nbsp;{{ chk.date_str }}&nbsp;</span>
+      </div>
+      {% endfor %}
+
+      {% for _ in range([3 - checks|length, 0]|max) %}
+      <div class="payment-row">
+        <span class="pay-label">בשיק מס׳</span>
+        <span class="pay-field">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="pay-sep">חשבון</span>
+        <span class="pay-field">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="pay-sep">בנק</span>
+        <span class="pay-field">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="pay-sep">ז"פ</span>
+        <span class="pay-field">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      </div>
+      {% endfor %}
+
+      <div class="signature-area">
+        <div class="signature-line"></div>
+        <div class="signature-label">חתימה</div>
+      </div>
+    </div>
+
+    <!-- Left side: payment breakdown mini-table -->
+    <table class="payment-table">
+      <thead>
+        <tr><th>אג׳</th><th>ש"ח</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ cash_ag }}</td>
+          <td>{{ cash_nis }}</td>
+        </tr>
+        {% for chk in checks %}
+        <tr>
+          <td>{{ chk.ag }}</td>
+          <td>{{ chk.nis }}</td>
+        </tr>
+        {% endfor %}
+        {% for _ in range([3 - checks|length, 0]|max) %}
+        <tr class="empty"><td></td><td></td></tr>
+        {% endfor %}
+        <tr class="total-row">
+          <td>{{ total_ag }}</td>
+          <td>{{ total_nis }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+</body>
+</html>
