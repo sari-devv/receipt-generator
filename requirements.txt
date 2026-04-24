@@ -1,2 +1,3 @@
 weasyprint
 jinja2
+flask

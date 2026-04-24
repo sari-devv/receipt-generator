@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחולל קבלות - {{ cfg.business_name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --panel-bg: #1e2130;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --input-bg: #0f111a;
+            --danger: #ef4444;
+            --success: #10b981;
+            --radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        button.outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        button.outline:hover {
+            background-color: rgba(255,255,255,0.05);
+            border-color: var(--text-muted);
+        }
+
+        button.danger {
+            background-color: transparent;
+            color: var(--danger);
+            padding: 0.5rem;
+        }
+        
+        button.danger:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            transform: none;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: 1.2rem;
+            justify-content: center;
+            margin-top: 1rem;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+        }
+
+        button.submit-btn:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.23);
+            transform: translateY(-2px);
+        }
+
+        /* Dynamic lists */
+        .dynamic-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .list-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            background-color: rgba(0,0,0,0.15);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.02);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .list-item .form-group {
+            margin-bottom: 0;
+        }
+
+        .item-desc { flex: 2; }
+        .item-amount { flex: 1; }
+
+        /* Notification */
+        #notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        #notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #notification.success { background-color: var(--success); }
+        #notification.error { background-color: var(--danger); }
+
+        /* Status overlay */
+        #loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 17, 26, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        #loading.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="loading"><div class="spinner"></div></div>
+
+    <div id="notification"></div>
+
+    <div class="container">
+        <header>
+            <h1>מחולל קבלות</h1>
+            <p class="subtitle">{{ cfg.business_name }} • ח.פ. {{ cfg.business_id }}</p>
+        </header>
+
+        <form id="receiptForm">
+            
+            <div class="panel">
+                <h2 class="section-title">פרטי מקבל הקבלה</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>שם המקבל (לכבוד)</label>
+                        <input type="text" id="recipient" required placeholder="לדוגמה: ישראל ישראלי">
+                    </div>
+                    <div class="form-group">
+                        <label>כתובת (אופציונלי)</label>
+                        <input type="text" id="address" placeholder="לדוגמה: רחוב הרצל 1, תל אביב">
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2 class="section-title">מספר ותאריך</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>תאריך</label>
+                        <input type="text" id="date" value="{{ today }}" placeholder="DD/MM/YYYY">
+                    </div>
+                    <div class="form-group">
+                        <label>מספר קבלה הבא</label>
+                        <input type="text" value="{{ next_num }}" disabled style="background: rgba(255,255,255,0.05);">
+                    </div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="no_increment">
+                    <label for="no_increment">הדפס מחדש (ללא הגדלת מספר קבלה)</label>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2 class="section-title">פירוט שירותים / מוצרים</h2>
+                <div id="itemsList" class="dynamic-list">
+                    <!-- Items will be injected here -->
+                </div>
+                <button type="button" class="outline" onclick="addItem()">+ הוסף שורה</button>
+            </div>
+
+            <div class="panel">
+                <h2 class="section-title">אמצעי תשלום</h2>
+                
+                <div class="form-group" style="max-width: 50%;">
+                    <label>תשלום במזומן (₪)</label>
+                    <input type="text" id="cash" placeholder="השאר ריק לסכום מלא">
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <label style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 1rem;">שיקים (אופציונלי)</label>
+                    <div id="checksList" class="dynamic-list">
+                        <!-- Checks will be injected here -->
+                    </div>
+                    <button type="button" class="outline" onclick="addCheck()">+ הוסף שיק</button>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                צור קבלה PDF
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Initialize dynamic lists
+        document.addEventListener('DOMContentLoaded', () => {
+            addItem();
+        });
+
+        function createRemoveBtn(onclick) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'danger';
+            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+            btn.onclick = onclick;
+            return btn;
+        }
+
+        function addItem() {
+            const container = document.getElementById('itemsList');
+            const row = document.createElement('div');
+            row.className = 'list-item item-row';
+            
+            row.innerHTML = `
+                <div class="form-group item-desc">
+                    <label>תיאור</label>
+                    <input type="text" class="i-desc" placeholder="לדוגמה: פיתוח אתר אינטרנט" required>
+                </div>
+                <div class="form-group item-amount">
+                    <label>סכום (₪)</label>
+                    <input type="text" class="i-amount" placeholder="0.00" required>
+                </div>
+            `;
+            
+            const removeBtn = createRemoveBtn(() => {
+                if(document.querySelectorAll('.item-row').length > 1) row.remove();
+            });
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        function addCheck() {
+            const container = document.getElementById('checksList');
+            const row = document.createElement('div');
+            row.className = 'list-item check-row';
+            
+            row.innerHTML = `
+                <div class="form-group"><label>מס׳ שיק</label><input type="text" class="c-num"></div>
+                <div class="form-group"><label>בנק</label><input type="text" class="c-bank"></div>
+                <div class="form-group"><label>חשבון</label><input type="text" class="c-acc"></div>
+                <div class="form-group"><label>תאריך</label><input type="text" class="c-date" value="${document.getElementById('date').value}"></div>
+                <div class="form-group"><label>סכום ₪</label><input type="text" class="c-amount"></div>
+            `;
+            
+            row.appendChild(createRemoveBtn(() => row.remove()));
+            container.appendChild(row);
+        }
+
+        function showNotification(msg, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = msg;
+            notif.className = `show ${type}`;
+            setTimeout(() => { notif.className = ''; }, 4000);
+        }
+
+        document.getElementById('receiptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Gather items
+            const items = Array.from(document.querySelectorAll('.item-row')).map(row => ({
+                description: row.querySelector('.i-desc').value,
+                amount: row.querySelector('.i-amount').value
+            })).filter(i => i.description && i.amount);
+
+            // Gather checks
+            const checks = Array.from(document.querySelectorAll('.check-row')).map(row => ({
+                number: row.querySelector('.c-num').value,
+                bank: row.querySelector('.c-bank').value,
+                account: row.querySelector('.c-acc').value,
+                date: row.querySelector('.c-date').value,
+                amount: row.querySelector('.c-amount').value
+            })).filter(c => c.number || c.amount);
+
+            const payload = {
+                recipient: document.getElementById('recipient').value,
+                address: document.getElementById('address').value,
+                date: document.getElementById('date').value,
+                no_increment: document.getElementById('no_increment').checked,
+                cash: document.getElementById('cash').value,
+                items,
+                checks
+            };
+
+            const loading = document.getElementById('loading');
+            loading.classList.add('active');
+
+            try {
+                const res = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                
+                if(data.success) {
+                    showNotification(data.message, 'success');
+                    
+                    // Download file automatically
+                    const a = document.createElement('a');
+                    a.href = data.pdf_url;
+                    a.download = data.pdf_url.split('/').pop();
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    // Reset form
+                    if(!payload.no_increment) {
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
+                } else {
+                    showNotification(data.error || 'אירעה שגיאה', 'error');
+                }
+            } catch(err) {
+                showNotification('שגיאת תקשורת', 'error');
+            } finally {
+                loading.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
