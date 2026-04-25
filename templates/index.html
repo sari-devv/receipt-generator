@@ -357,6 +357,14 @@
                     </div>
                     <button type="button" class="outline" onclick="addCheck()">+ הוסף שיק</button>
                 </div>
+
+                <div style="margin-top: 2rem;">
+                    <label style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 1rem;">העברה בנקאית (אופציונלי)</label>
+                    <div id="transfersList" class="dynamic-list">
+                        <!-- Transfers will be injected here -->
+                    </div>
+                    <button type="button" class="outline" onclick="addTransfer()">+ הוסף העברה</button>
+                </div>
             </div>
 
             <button type="submit" class="submit-btn">
@@ -421,6 +429,23 @@
             container.appendChild(row);
         }
 
+        function addTransfer() {
+            const container = document.getElementById('transfersList');
+            const row = document.createElement('div');
+            row.className = 'list-item transfer-row';
+            
+            row.innerHTML = `
+                <div class="form-group"><label>אסמכתא</label><input type="text" class="t-ref"></div>
+                <div class="form-group"><label>בנק</label><input type="text" class="t-bank"></div>
+                <div class="form-group"><label>חשבון</label><input type="text" class="t-acc"></div>
+                <div class="form-group"><label>תאריך</label><input type="text" class="t-date" value="${document.getElementById('date').value}"></div>
+                <div class="form-group"><label>סכום ₪</label><input type="text" class="t-amount"></div>
+            `;
+            
+            row.appendChild(createRemoveBtn(() => row.remove()));
+            container.appendChild(row);
+        }
+
         function showNotification(msg, type) {
             const notif = document.getElementById('notification');
             notif.textContent = msg;
@@ -446,6 +471,15 @@
                 amount: row.querySelector('.c-amount').value
             })).filter(c => c.number || c.amount);
 
+            // Gather transfers
+            const transfers = Array.from(document.querySelectorAll('.transfer-row')).map(row => ({
+                ref: row.querySelector('.t-ref').value,
+                bank: row.querySelector('.t-bank').value,
+                account: row.querySelector('.t-acc').value,
+                date: row.querySelector('.t-date').value,
+                amount: row.querySelector('.t-amount').value
+            })).filter(t => t.ref || t.amount);
+
             const payload = {
                 recipient: document.getElementById('recipient').value,
                 address: document.getElementById('address').value,
@@ -453,7 +487,8 @@
                 no_increment: document.getElementById('no_increment').checked,
                 cash: document.getElementById('cash').value,
                 items,
-                checks
+                checks,
+                transfers
             };
 
             const loading = document.getElementById('loading');
