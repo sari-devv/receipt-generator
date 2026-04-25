@@ -116,7 +116,9 @@ def build_context(
     items: list[dict],
     cash_agorot: int,
     checks: list[dict],
+    transfers: list[dict] = None,
 ) -> dict:
+    transfers = transfers or []
     total_agorot   = sum(i["amount_agorot"] for i in items)
     total_nis, total_ag = agorot_to_parts(total_agorot)
     cash_nis, cash_ag   = agorot_to_parts(cash_agorot)
@@ -132,6 +134,12 @@ def build_context(
     for chk in checks:
         nis, ag = agorot_to_parts(chk["amount_agorot"])
         check_rows.append({**chk, "nis": nis, "ag": ag})
+
+    # Enrich each transfer with display strings
+    transfer_rows = []
+    for t in transfers:
+        nis, ag = agorot_to_parts(t["amount_agorot"])
+        transfer_rows.append({**t, "nis": nis, "ag": ag})
 
     # Pad items to at least 6 rows for the classic receipt look
     empty_rows = max(6 - len(item_rows), 0)
@@ -162,6 +170,7 @@ def build_context(
         "cash_ag":      cash_ag,
         "cash_display": cash_display,
         "checks":       check_rows,
+        "transfers":    transfer_rows,
     }
 
 
@@ -218,7 +227,26 @@ def interactive_mode() -> tuple[str, str, list[dict], int, list[dict]]:
             })
             remaining -= chk_agorot
 
-    return recipient, address, items, cash_agorot, checks
+    transfers = []
+    if remaining > 0:
+        print("Enter bank transfer details (leave reference empty to finish):")
+        while remaining > 0:
+            ref = prompt("  Reference Number (אסמכתא)")
+            if not ref:
+                break
+            bank     = prompt("  Bank Name")
+            account  = prompt("  Account Number")
+            t_date   = prompt("  Transfer Date (DD/MM/YYYY)", default=today_str())
+            rem_nis, _ = agorot_to_parts(remaining)
+            t_str  = prompt(f"  Transfer Amount (NIS)", default=rem_nis.replace(",", ""))
+            t_agorot = parse_amount(t_str)
+            transfers.append({
+                "ref": ref, "bank": bank, "account": account,
+                "date_str": t_date, "amount_agorot": t_agorot,
+            })
+            remaining -= t_agorot
+
+    return recipient, address, items, cash_agorot, checks, transfers
 
 
 # ── CLI args ───────────────────────────────────────────────────────────────────
@@ -261,6 +289,8 @@ Examples:
                         help="Cash payment in NIS (default: full total)")
     parser.add_argument("--checks",    nargs="+",
                         help="Cheques as 'number:bank:account:date:amount_nis'")
+    parser.add_argument("--transfers", nargs="+",
+                        help="Transfers as 'ref:bank:account:date:amount_nis'")
     parser.add_argument("--date",      "-d", default=None,
                         help="Receipt date DD/MM/YYYY (default: today)")
     parser.add_argument("--no-increment", action="store_true",
@@ -299,8 +329,21 @@ def main():
                 "number": num, "bank": bank, "account": account,
                 "date_str": chk_date, "amount_agorot": parse_amount(chk_amount),
             })
+        
+        transfers = []
+        for t_str in (args.transfers or []):
+            parts = t_str.split(":")
+            if len(parts) != 5:
+                raise ValueError(
+                    "Transfer format: 'ref:bank:account:date:amount_nis'"
+                )
+            ref, bank, account, t_date, t_amount = parts
+            transfers.append({
+                "ref": ref, "bank": bank, "account": account,
+                "date_str": t_date, "amount_agorot": parse_amount(t_amount),
+            })
     else:
-        recipient, address, items, cash_agorot, checks = interactive_mode()
+        recipient, address, items, cash_agorot, checks, transfers = interactive_mode()
 
     if not items:
         print("ERROR: At least one item is required.")
@@ -309,7 +352,7 @@ def main():
     # ── Render template ────────────────────────────────────────────────────
     context = build_context(
         cfg, receipt_number, receipt_date,
-        recipient, address, items, cash_agorot, checks,
+        recipient, address, items, cash_agorot, checks, transfers,
     )
     html_content = render_receipt(context)
 

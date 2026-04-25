@@ -251,7 +251,20 @@
       </div>
       {% endfor %}
 
-      {% for _ in range([3 - checks|length, 0]|max) %}
+      {% for t in transfers %}
+      <div class="payment-row">
+        <span class="pay-label">בהעברה (אסמכתא)</span>
+        <span class="pay-field">&nbsp;{{ t.ref }}&nbsp;</span>
+        <span class="pay-sep">חשבון</span>
+        <span class="pay-field">&nbsp;{{ t.account }}&nbsp;</span>
+        <span class="pay-sep">בנק</span>
+        <span class="pay-field">&nbsp;{{ t.bank }}&nbsp;</span>
+        <span class="pay-sep">תאריך</span>
+        <span class="pay-field">&nbsp;{{ t.date_str }}&nbsp;</span>
+      </div>
+      {% endfor %}
+
+      {% for _ in range([3 - (checks|length + transfers|length), 0]|max) %}
       <div class="payment-row">
         <span class="pay-label">בשיק מס׳</span>
         <span class="pay-field">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -286,7 +299,13 @@
           <td>{{ chk.nis }}</td>
         </tr>
         {% endfor %}
-        {% for _ in range([3 - checks|length, 0]|max) %}
+        {% for t in transfers %}
+        <tr>
+          <td>{{ t.ag }}</td>
+          <td>{{ t.nis }}</td>
+        </tr>
+        {% endfor %}
+        {% for _ in range([3 - (checks|length + transfers|length), 0]|max) %}
         <tr class="empty"><td></td><td></td></tr>
         {% endfor %}
         <tr class="total-row">

@@ -86,10 +86,27 @@ def generate():
                     "date_str": chkdate, "amount_agorot": parse_amount(amt_str),
                 })
 
+        transfers_data = data.get("transfers", [])
+        transfers = []
+        for t in transfers_data:
+            ref = t.get("ref", "").strip()
+            bank = t.get("bank", "").strip()
+            acct = t.get("account", "").strip()
+            tdate = t.get("date", "").strip() or today_str()
+            amt_str = t.get("amount", "").strip()
+
+            if any([ref, bank, acct, amt_str]):
+                if not amt_str:
+                     return jsonify({"error": f"חסר סכום להעברה {ref or '?'}"}), 400
+                transfers.append({
+                    "ref": ref, "bank": bank, "account": acct,
+                    "date_str": tdate, "amount_agorot": parse_amount(amt_str),
+                })
+
         # Build context & render
         context = build_context(
             cfg, receipt_number, receipt_date,
-            recipient, address, items, cash_agorot, checks,
+            recipient, address, items, cash_agorot, checks, transfers,
         )
         html_content = render_receipt(context)
 
