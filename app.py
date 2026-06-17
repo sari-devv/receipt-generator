@@ -66,9 +66,6 @@ def generate():
 
         total_agorot = sum(i["amount_agorot"] for i in items)
 
-        cash_str = data.get("cash", "").strip()
-        cash_agorot = parse_amount(cash_str) if cash_str else total_agorot
-
         checks_data = data.get("checks", [])
         checks = []
         for chk in checks_data:
@@ -102,6 +99,18 @@ def generate():
                     "ref": ref, "bank": bank, "account": acct,
                     "date_str": tdate, "amount_agorot": parse_amount(amt_str),
                 })
+
+        # Calculate default cash
+        non_cash_total = sum(c["amount_agorot"] for c in checks) + sum(t["amount_agorot"] for t in transfers)
+        cash_str = data.get("cash", "").strip()
+        if cash_str:
+            cash_agorot = parse_amount(cash_str)
+        else:
+            # Default to remaining balance if empty
+            cash_agorot = max(0, total_agorot - non_cash_total)
+
+        if (cash_agorot + non_cash_total) == 0:
+            return jsonify({"error": "יש להזין לפחות אמצעי תשלום אחד (מזומן, שיק או העברה)"}), 400
 
         # Build context & render
         context = build_context(

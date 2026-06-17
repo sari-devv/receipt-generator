@@ -204,32 +204,28 @@ def interactive_mode() -> tuple[str, str, list[dict], int, list[dict]]:
     total_nis, _ = agorot_to_parts(total_agorot)
     print(f"\nTotal: ₪{total_nis}")
 
-    cash_str   = prompt("Cash Payment (NIS)", default=total_nis.replace(",", ""))
-    cash_agorot = parse_amount(cash_str)
-
+    remaining = total_agorot
     checks = []
-    remaining = total_agorot - cash_agorot
-    if remaining > 0:
-        print("Enter cheque details (leave cheque number empty to finish):")
-        while remaining > 0:
-            num = prompt("  Cheque Number")
-            if not num:
-                break
-            bank     = prompt("  Bank Name")
-            account  = prompt("  Account Number")
-            chk_date = prompt("  Cheque Date (DD/MM/YYYY)", default=today_str())
-            rem_nis, _ = agorot_to_parts(remaining)
-            chk_str  = prompt(f"  Cheque Amount (NIS)", default=rem_nis.replace(",", ""))
-            chk_agorot = parse_amount(chk_str)
-            checks.append({
-                "number": num, "bank": bank, "account": account,
-                "date_str": chk_date, "amount_agorot": chk_agorot,
-            })
-            remaining -= chk_agorot
+    print("\nEnter cheque details (leave cheque number empty to skip/finish):")
+    while remaining > 0:
+        num = prompt("  Cheque Number")
+        if not num:
+            break
+        bank     = prompt("  Bank Name")
+        account  = prompt("  Account Number")
+        chk_date = prompt("  Cheque Date (DD/MM/YYYY)", default=today_str())
+        rem_nis, _ = agorot_to_parts(remaining)
+        chk_str  = prompt(f"  Cheque Amount (NIS)", default=rem_nis.replace(",", ""))
+        chk_agorot = parse_amount(chk_str)
+        checks.append({
+            "number": num, "bank": bank, "account": account,
+            "date_str": chk_date, "amount_agorot": chk_agorot,
+        })
+        remaining -= chk_agorot
 
     transfers = []
     if remaining > 0:
-        print("Enter bank transfer details (leave reference empty to finish):")
+        print("\nEnter bank transfer details (leave reference empty to skip/finish):")
         while remaining > 0:
             ref = prompt("  Reference Number (אסמכתא)")
             if not ref:
@@ -245,6 +241,14 @@ def interactive_mode() -> tuple[str, str, list[dict], int, list[dict]]:
                 "date_str": t_date, "amount_agorot": t_agorot,
             })
             remaining -= t_agorot
+
+    rem_nis, _ = agorot_to_parts(max(0, remaining))
+    cash_str   = prompt("Cash Payment (NIS)", default=rem_nis.replace(",", ""))
+    cash_agorot = parse_amount(cash_str)
+
+    if (cash_agorot + sum(c["amount_agorot"] for c in checks) + sum(t["amount_agorot"] for t in transfers)) == 0:
+        print("ERROR: Must provide at least one payment method.")
+        sys.exit(1)
 
     return recipient, address, items, cash_agorot, checks, transfers
 
@@ -315,7 +319,6 @@ def main():
         items     = [parse_item(i) for i in (args.items or [])]
 
         total_agorot = sum(i["amount_agorot"] for i in items)
-        cash_agorot  = parse_amount(args.cash) if args.cash else total_agorot
 
         checks = []
         for chk_str in (args.checks or []):
@@ -338,6 +341,21 @@ def main():
                     "Transfer format: 'ref:bank:account:date:amount_nis'"
                 )
             ref, bank, account, t_date, t_amount = parts
+            transfers.append({
+                "ref": ref, "bank": bank, "account": account,
+                "date_str": t_date, "amount_agorot": parse_amount(t_amount),
+            })
+
+        # Calculate default cash
+        non_cash_total = sum(c["amount_agorot"] for c in checks) + sum(t["amount_agorot"] for t in transfers)
+        if args.cash is not None:
+            cash_agorot = parse_amount(args.cash)
+        else:
+            cash_agorot = max(0, total_agorot - non_cash_total)
+
+        if (cash_agorot + non_cash_total) == 0:
+            print("ERROR: Must provide at least one payment method (cash, checks, or transfers).")
+            sys.exit(1)
             transfers.append({
                 "ref": ref, "bank": bank, "account": account,
                 "date_str": t_date, "amount_agorot": parse_amount(t_amount),
